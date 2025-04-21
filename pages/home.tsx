@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, FlatList, Image, Dimensions }
 import { getUser, getUserDiscussionList } from '../service/api';
 import RenderHTML from 'react-native-render-html';
 import { useNavigation } from '@react-navigation/native';
+import Whatapp from './whatap';
 const { width } = Dimensions.get('window');
 
 // Mock User Data
@@ -53,6 +54,8 @@ const TabExample = () => {
       setUsers(data?.data ? data?.data : []);
 
    };
+
+
    const getUserDiscussion = async () => {
       let payload = { business_id: 205 };
       const data = await getUserDiscussionList(payload);
@@ -69,7 +72,7 @@ const TabExample = () => {
    };
    const renderUserItem = ({ item }) => (
       <TouchableOpacity
-         onPress={() => navigation.navigate('Chat')}>
+         onPress={() => navigation.navigate('Chat', { id: item.id })}>
          <View style={styles.chatItem}>
             {item.imageUrl ? (
                <Image source={{ uri: item.imageUrl }} style={styles.chatAvatar} />
@@ -99,7 +102,7 @@ const TabExample = () => {
    const renderUserFollowUpItem = ({ item }) => (
       <View>
          {item.followup_date && (
-            <TouchableOpacity onPress={() => navigation.navigate('Chat')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Chat', { id: item.id })}>
                <View style={styles.chatItem}>
                   {item.imageUrl ? (
                      <Image source={{ uri: item.imageUrl }} style={styles.chatAvatar} />
@@ -146,7 +149,7 @@ const TabExample = () => {
                onPress={() => setActiveTab('tab2')}
                style={[activeTab === 'tab2' && styles.activeTab]}
             >
-               <Text style={styles.tabText}>Chat</Text>
+               <Text style={styles.tabText}>Whataap</Text>
             </TouchableOpacity>
             <TouchableOpacity
                onPress={() => setActiveTab('tab3')}
@@ -155,20 +158,7 @@ const TabExample = () => {
                <Text style={styles.tabText}>Follow up</Text>
             </TouchableOpacity>
          </View>
-         {/* <View style={styles.tabs}>
-            <TouchableOpacity
-               onPress={() => setActiveTab('tab1')}
-               style={[styles.tabButton, activeTab === 'tab1' && styles.activeTab]}
-            >
-               <Text style={styles.tabText}>Inbox</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-               onPress={() => setActiveTab('tab2')}
-               style={[styles.tabButton, activeTab === 'tab2' && styles.activeTab]}
-            >
-               <Text style={styles.tabText}>Tab 2</Text>
-            </TouchableOpacity>
-         </View> */}
+
 
          {/* Tab Content */}
          <View style={styles.content}>
@@ -179,7 +169,7 @@ const TabExample = () => {
                   renderItem={renderUserItem}
                />
             )}
-            {activeTab === 'tab2' && <Text>Chat</Text>}
+            {activeTab === 'tab2' && <Whatapp></Whatapp>}
 
             {activeTab === 'tab3' && (
                <FlatList

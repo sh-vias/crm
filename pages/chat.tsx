@@ -5,33 +5,26 @@ import { TextInput, Button } from 'react-native';
 import * as ImagePicker from 'react-native-image-picker';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { KeyboardAvoidingView, Platform } from 'react-native';
-import { getUserDiscussionList, getUserDiscussionLists } from '../service/api';
+import { getUserDiscussionList, getUserDiscussionLists, singleUserProfile } from '../service/api';
 import RenderHTML from 'react-native-render-html';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import Whatapp from './whatap';
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
+   const route = useRoute();
+   const { id } = route.params;
+   console.log("id", id)
    const chatData = {
       name: 'Emma Thompson',
       message: 'Thanks for the appointment confirmation!',
       time: '12:00',
       imageUrl: '', // try adding a link here to test image
    };
-   // const messages = [
-   //    {
-   //       id: '1',
-   //       text: 'Hey there!',
-   //       sender: 'me',
-   //       time: '12:00',
-   //    },
-   //    {
-   //       id: '2',
-   //       text: 'Hi! How are you?',
-   //       sender: 'other',
-   //       time: '12:01',
-   //    },
-   // ];
+
+   const [activeTab, setActiveTab] = useState('tab1');
    const [message, setMessage] = useState('');
+   const [users, setUsers] = useState([]);
    const [fontSize, setFontSize] = useState(16);
    const [imageUri, setImageUri] = useState(null);
    const [date, setDate] = useState(new Date());
@@ -41,7 +34,7 @@ export default function ProfileScreen() {
 
 
       getUserDiscussion()
-
+      getUserProfile()
 
    }, []);
    const renderMessageItem = ({ item }) => (
@@ -99,6 +92,13 @@ export default function ProfileScreen() {
 
       </View>
    );
+   const getUserProfile = async () => {
+      let payload = { user_id: id };
+      const data = await singleUserProfile(payload);
+      console.log(data.data)
+      setUsers(data?.data ? data?.data : []);
+
+   };
    // const renderMessageItem = ({ item }) => {
    //    const isMe = item.sender === 'me';
 
@@ -190,7 +190,7 @@ export default function ProfileScreen() {
       let payload = {
          business_id: 205, user_id
             :
-            1131
+            id
       };
       const data = await getUserDiscussionLists(payload);
       console.log(data.data)
@@ -203,18 +203,18 @@ export default function ProfileScreen() {
    };
    return (
 
-      <ScrollView style={styles.container}>
+      <View style={styles.container}>
          {/* Header */}
          <View style={styles.header}>
             <TouchableOpacity style={styles.menuIcon}>
                <Icon name="more-vert" size={24} color="#fff" />
             </TouchableOpacity>
             <Image
-               source={{ uri: 'https://i.imgur.com/2nCt3Sbl.png' }} // Replace with actual profile image
+               source={{ uri: users.image }} // Replace with actual profile image
                style={styles.avatar}
             />
-            <Text style={styles.name}>Christine Oliver</Text>
-            <Text style={styles.subtitle}>Prefers almond milk latte with dark chocolate</Text>
+            <Text style={styles.name}>{users.first_name}</Text>
+            <Text style={styles.subtitle}>{users.phone}, {users.email}</Text>
             <View style={styles.actions}>
                <Icon name="videocam" size={24} style={styles.actionIcon} />
                <Icon name="chat" size={24} style={styles.actionIcon} />
@@ -223,90 +223,65 @@ export default function ProfileScreen() {
          </View>
 
          {/* Tabs */}
-         <View style={styles.tabs}>
+         {/* <View style={styles.tabs}>
             <Text style={[styles.tab, styles.activeTab]}>Response </Text>
             <Text style={styles.tab}>Whatapp</Text>
             <Text style={styles.tab}>Deal</Text>
+         </View> */}
+         <View style={styles.tabs}>
+            <TouchableOpacity
+               onPress={() => setActiveTab('tab1')}
+               style={[activeTab === 'tab1' && styles.activeTab]}
+            >
+               <Text style={[styles.tab]}>Response </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+               onPress={() => setActiveTab('tab2')}
+               style={[activeTab === 'tab2' && styles.activeTab]}
+            >
+               <Text style={styles.tab}>Whatapp</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+               onPress={() => setActiveTab('tab3')}
+               style={[activeTab === 'tab3' && styles.activeTab]}
+            >
+               <Text style={styles.tab}>Deal</Text>
+            </TouchableOpacity>
          </View>
+         <View style={styles.content}>
+            {activeTab === 'tab1' && (
+               <KeyboardAvoidingView
+                  style={{ flex: 1 }}
+                  behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                  keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
+               >
+                  <View style={{ flex: 1 }}>
+                     {/* <ScrollView > */}
+                     {/* all existing UI here except the input box */}
+                     <FlatList style={styles.container}
+                        data={getUserDiscussions}
+                        renderItem={renderMessageItem}
+                        keyExtractor={(item) => item.id}
+                        contentContainerStyle={styles.chatContainer}
+                     />
 
-         {/* Services */}
-         {/* <View style={styles.services}>
-            <Text style={styles.serviceItem}>● Evening makeup</Text>
-            <Text style={[styles.serviceItem, { color: '#00C58D' }]}>● Hollywood wave hairstyle</Text>
-         </View> */}
 
-         {/* Total Sum */}
-         {/* <View style={styles.total}>
-            <Text style={styles.totalLabel}>Total sum</Text>
-            <Text style={styles.totalAmount}>270 USD</Text>
-         </View> */}
+                     {/* </ScrollView> */}
 
-         {/* Buttons */}
-         {/* <View style={styles.buttonRow}>
-            <TouchableOpacity style={styles.button}>
-               <Icon name="edit" size={20} color="#fff" />
-               <Text style={styles.buttonText}>EDIT</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.iconButton}>
-               <Icon name="content-copy" size={20} color="#fff" />
-            </TouchableOpacity>
-         </View> */}
-
-         {/* Recent Chats */}
-         {/* <View style={styles.chats}>
-            <Text style={styles.chatTitle}>Recent Chats</Text>
-            <View style={styles.chatItem}>
-             
-               {chatData.imageUrl ? (
-                  <Image
-                     source={{ uri: chatData.imageUrl }}
-                     style={styles.chatAvatar}
-                  />
-               ) : (
-                  <View style={styles.chatInitials}>
-                     <Text style={styles.initialsText}>
-                        {chatData.name.charAt(0).toUpperCase()}
-                     </Text>
+                     {/* Chat Input fixed at bottom */}
+                     {renderChatInput()}
                   </View>
-               )}
-               <View style={styles.dot} />
-               <View>
-                  <Text style={styles.chatName}>Emma Thompson</Text>
-                  <Text style={styles.chatMessage}>Thanks for the appointment confirmation!</Text>
-               </View>
-               <Text style={styles.chatTime}>12:00</Text>
-            </View>
-         </View> */}
-         {/* <FlatList
-            data={messages}
-            renderItem={renderMessageItem}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={styles.chatContainer}
-         /> */}
+               </KeyboardAvoidingView>
+            )}
+            {activeTab === 'tab2' && <Whatapp></Whatapp>}
+
+            {activeTab === 'tab3' && (
+               <Text>Helo</Text>
+            )}
+         </View>
          {/* --------------------- Message Input Area --------------------- */}
-         <KeyboardAvoidingView
-            style={{ flex: 1 }}
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
-         >
-            <View style={{ flex: 1 }}>
-               <ScrollView style={styles.container}>
-                  {/* all existing UI here except the input box */}
-                  <FlatList
-                     data={getUserDiscussions}
-                     renderItem={renderMessageItem}
-                     keyExtractor={(item) => item.id}
-                     contentContainerStyle={styles.chatContainer}
-                  />
 
-
-               </ScrollView>
-
-               {/* Chat Input fixed at bottom */}
-               {renderChatInput()}
-            </View>
-         </KeyboardAvoidingView>
-      </ScrollView>
+      </View>
    );
 }
 
@@ -315,7 +290,7 @@ const styles = StyleSheet.create({
    chatContainer: {
       padding: 10,
    },
-
+   content: { flex: 1, padding: 10 },
    messageContainer: {
       flexDirection: 'row',
       marginVertical: 4,
@@ -368,8 +343,8 @@ const styles = StyleSheet.create({
    },
    menuIcon: { position: 'absolute', top: 10, right: 10 },
    avatar: { width: 70, height: 70, borderRadius: 35, borderWidth: 3, borderColor: '#fff', marginBottom: 10 },
-   name: { fontWeight: 'bold', fontSize: 18 },
-   subtitle: { fontSize: 12, color: 'white', textAlign: 'center', marginVertical: 5 },
+   name: { fontWeight: 'bold', fontSize: 18, color: 'white' },
+   subtitle: { fontSize: 12, color: 'white', textAlign: 'center', marginVertical: 5, fontWeight: 'bold' },
    actions: { flexDirection: 'row', marginVertical: 10 },
    actionIcon: { marginHorizontal: 10, color: '#a279ff' },
 
